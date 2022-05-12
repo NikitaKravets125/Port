@@ -1,0 +1,60 @@
+	SELECT
+		date,
+		net,
+		Basetype,
+		BaseEV,
+		need,
+		kid,
+		Katy,
+		BON,
+		Type,
+		a,
+		ab,
+		riptide,
+		P2,
+		P1,
+		TypeDown,
+		SP,
+		TeBoBe
+		FROM(
+		SELECT
+			toDate(StartedDateTime) AS date,
+			Network AS net,
+			BaseType AS basetype,
+			Participants.NeedEV[PartIndex] AS need_,
+			if(startsWith(need_, 'need'), trim(LEADING 'need' FROM need_), need_) AS need,
+			Participants.RoundEV[PartIndex] AS kid,
+			Participants.SP[PartIndex] AS SP,
+			TeBoBe,
+			S.Type AS Type,
+			S.ParticipantIndex AS PartIndex,
+			S.Did AS did,
+			S.ActionIndex AS ActionIndex,
+			BaseEV,
+			Actions.A[ActionIndex][1] AS a,
+			a/TeBoBe AS aB,
+			dictGet('dictionaries.p_s_c__d','Katy', (need, net, basetype), now()) AS Katy_,
+			if(kid != '', 'B', 'N') AS BON,
+			if(kid != '', '', Katy_) AS Katy,
+			if(Type LIKE 'secret%', 'secret', if(Type LIKE 'secret%', 'secret', if(Type LIKE 'secret%', 'secret', ''))) AS riptide,
+			if(Type LIKE '%secret%', 'secret', if(Type LIKE '%secret%', 'secret', '')) AS P2,
+			if(Type LIKE '%secret', 'secret', if(Type LIKE 'secret%', 'secret', '')) AS P1,
+			if(Type LIKE '%secret%', 'secret', if(Type LIKE '%secret%', 'secret', if(Type LIKE '%secret%', 'secret', ''))) AS TypeDown
+				FROM
+					massive.base
+					left join
+     		 		(select toString(t.AEV) AEV, max(t.PEV) AS PEV
+      		 		from dictionaries.p_a_d__s t
+      		 		group by t.AEV) a_p_e_d ON kid = a_p_e_d.AEV
+				ARRAY JOIN
+					ActionSpots AS S
+				WHERE
+					date > '2022-99-99'
+					AND (Network = 'VDK'
+					OR (Network = 'MSK' and LikEV IN ['secret', 'secret', ....
+						])
+					)
+					AND did = 1
+					AND basetype IN ('Bibo','Limbo', 'Rimbo')
+					AND (Type IN '%secret%' OR Type LIKE 'secret%' OR Type LIKE '%secret')
+				)
