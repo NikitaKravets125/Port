@@ -1,0 +1,37 @@
+#Расчет среднеквадратического отклонения и 95% доверительного интервала, для 2х метрик. 
+
+import pandas as pd
+import numpy as np
+
+tev_mass = pd.read_csv('tev_tbb_99-99')
+df_gev = pd.read_csv('gev_tbb_99-99')
+df_tev = tev_mass.groupby(['date','tev', 'pev']).sum()
+df_tev['count'] = tev_mass.groupby(['date','tev', 'pev']).count()['ev']
+df_tev_true = df_tev.reset_index()
+
+df_tev_true['nw_mean'] = df_tev_true['nw'] / df_tev_true['count']
+df_tev_true['ev_mean'] = df_tev_true['ev'] / df_tev_true['count']
+
+df_tevd = tev_mass.merge(df_tev_true[['date', 'tev', 'pev', 'nw_mean', 'ie_mean']], on = ['date', 'tev', 'pev'], how = 'left')
+
+dnw_tev = round(np.var(df_tevd['nw_mean']), 2)
+snw_tev = round(np.sqrt(dnw_tev), 2)
+dnw_gev = round(np.var(df_gev['nw']), 2)
+snw_gev = round(np.sqrt(dnw_gev), 2)
+dev_tev = round(np.var(df_tevd['ie_mean']), 2)
+sev_tev = round(np.sqrt(dev_tev), 2)
+dev_gev = round(np.var(df_gev['ev']), 2)
+sev_gev = round(np.sqrt(dev_gev), 2)
+n_tev = np.sqrt(df_tev_true['date'].count())
+n_gev = np.sqrt(df_gev['date'].count())
+mnw_tev = round(np.mean(df_tevd['nw_mean']), 2)
+mev_tev = round(np.mean(df_tevd['ie_mean']), 2)
+mnw_gev = round(np.mean(df_gev['nw']), 2)
+mev_g = round(np.mean(df_gev['ie']), 2)
+
+print('snw_tev {', round(mnw_tev - 1.96 * (snw_tev/n_tev), 2), '<=', snw_tev, '<=', round(mnw_tev + 1.96 * (snw_tev/n_tev), 2), '}')
+print('snw_gev {', round(mnw_gev - 1.96 * (snw_gev/n_gev), 2), '<=', snw_gev, '<=', round(mnw_gev + 1.96 * (snw_gev/n_gev), 2), '}')
+print('sev_tev {', round(mev_tev - 1.96 * (sev_tev/n_tev), 2), '<=', sev_tev, '<=', round(mev_tev + 1.96 * (sev_tev/n_tev), 2), '}')
+print('sev_gev {', round(mev_gev - 1.96 * (sev_gev/n_gev), 2), '<=', sev_gev, '<=', round(mev_gev + 1.96 * (sev_gev/n_gev), 2), '}')
+df_tevd['netwin_mean'].hist()
+df_gev['nw'].hist()
